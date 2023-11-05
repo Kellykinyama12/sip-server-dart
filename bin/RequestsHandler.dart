@@ -2,7 +2,6 @@ import "dart:core";
 import 'dart:ffi';
 import 'dart:math';
 
-import 'RequestsHandler.dart';
 import "SipMessage.dart";
 import "SipClient.dart";
 import "Session.dart";
@@ -14,6 +13,8 @@ import 'SipMessageTypes.dart';
 import 'SipSdpMessage.dart';
 import 'sipMessageHeaders.dart';
 import 'digest.dart';
+
+import 'configs/users.dart';
 
 String IDGen() {
   String out = "";
@@ -101,7 +102,7 @@ class ReqHandler {
       String branch = data.getVia().substring(data.getVia().indexOf("branch"));
       String respStr = SipMessageTypes.UNAUTHORIZED +
           SipMessageHeaders.HEADERS_DELIMETER +
-          "Via: SIP/2.0/UDP $_serverIp:5080;" +
+          "Via: SIP/2.0/UDP $_serverIp:$_serverPort;" +
           branch +
           SipMessageHeaders.HEADERS_DELIMETER +
           data.getTo() +
@@ -156,10 +157,64 @@ class ReqHandler {
       startIndex = authorization.indexOf('username="');
       String username = authorization.substring(startIndex + 10);
       username = username.substring(0, username.indexOf('"'));
+
       print("username: $username");
 
       startIndex = authorization.indexOf('username="');
-      String password = "1000";
+      String password = "";
+      if (users[username] != null) {
+        var user = users[username];
+        password = user["password"];
+      } else {
+        String auth =
+            "WWW-Authenticate: Digest realm=\"$_serverIp\", domain=\"sip:$_serverIp\", qop=\"none\", nonce=\"f84f1cec41e6cbe5aea9c8e88d359\", opaque=\"\", stale=FALSE, algorithm=MD5";
+
+        // auth =
+        //   "WWW-Authenticate: Digest realm=\"$_serverIp\", nonce=\"42cac6967970048b000\", opaque=\"asop19431163asdfj\"";
+        print("Creating response");
+
+        String branch =
+            data.getVia().substring(data.getVia().indexOf("branch"));
+        String respStr = SipMessageTypes.UNAUTHORIZED +
+            SipMessageHeaders.HEADERS_DELIMETER +
+            "Via: SIP/2.0/UDP $_serverIp:$_serverPort;" +
+            branch +
+            SipMessageHeaders.HEADERS_DELIMETER +
+            data.getTo() +
+            SipMessageHeaders.HEADERS_DELIMETER +
+            data.getFrom() +
+            SipMessageHeaders.HEADERS_DELIMETER +
+            data.getCallID() +
+            SipMessageHeaders.HEADERS_DELIMETER +
+            data.getCSeq() +
+            SipMessageHeaders.HEADERS_DELIMETER +
+            auth +
+            SipMessageHeaders.HEADERS_DELIMETER +
+            "Content-Length: 0" +
+            SipMessageHeaders.HEADERS_DELIMETER +
+            SipMessageHeaders.HEADERS_DELIMETER;
+
+        //print(branch);
+        SipMessage challenge = SipMessage(respStr, data.getSource());
+        // print(
+        //     "Index: ${challenge.toString().indexOf(SipMessageHeaders.WWW_Authenticate)} and value: ${challenge.getWwwAuth()}");
+        //print(challenge.getType());
+        //challenge.setHeader(SipMessageTypes.UNAUTHORIZED);
+        //challenge.setWwwAuth(auth);
+        /*challenge.setTo(data.getTo() + ";tag=" + IDGen());
+    challenge.setContact("Contact: <sip:" +
+        data.getFromNumber() +
+        "@" +
+        _serverIp +
+        ":" +
+        _serverPort.toString() +
+        ";transport=UDP>");
+*/
+        print("Sending response");
+        //print(challenge.toString());
+        //print(respStr);
+        endHandle(challenge.getFromNumber(), challenge);
+      }
       print("password: $password");
 
       startIndex = authorization.indexOf('uri="');
@@ -222,7 +277,7 @@ class ReqHandler {
             data.getVia().substring(data.getVia().indexOf("branch"));
         String respStr = SipMessageTypes.UNAUTHORIZED +
             SipMessageHeaders.HEADERS_DELIMETER +
-            "Via: SIP/2.0/UDP $_serverIp:5080;" +
+            "Via: SIP/2.0/UDP $_serverIp:$_serverPort;" +
             branch +
             SipMessageHeaders.HEADERS_DELIMETER +
             data.getTo() +
