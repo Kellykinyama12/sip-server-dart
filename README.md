@@ -22,3 +22,4 @@ SIP trunks No
 Supported headers are in bin/sipMessageHeaders
 Supported Sip methods are in bin/sipMessageTypes
 RequestHandler handles request and endHanle function sends responses
+Populate the bin/configs.dart for users
