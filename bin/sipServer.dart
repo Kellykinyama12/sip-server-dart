@@ -3,6 +3,7 @@ import 'SipMessage.dart';
 import "SipMessageFactory.dart";
 import 'addrPort.dart';
 import 'dart:io';
+import 'configs/trunks.dart';
 
 class SipServer {
   // SipServer(String ip, {int port = 5060}){
@@ -72,6 +73,12 @@ class SipServer {
           //     InternetAddress(d.address.address), d.port);
         }
 
+        //handler!.register(trunks["1000"]);
+        // trunks.forEach((key, value) {
+        //   print("Sending registration");
+        //   handler!.register(value);
+        // });
+
         // Where:
         // sendStatus(Timer timer) {
         //   //print(resp);
@@ -79,6 +86,10 @@ class SipServer {
         //       message.toString().codeUnits, InternetAddress("127.0.0.1"), 5080);
         // }
         // var _time2 = Timer.periodic(const Duration(seconds: 5), sendStatus);
+      });
+      trunks.forEach((key, value) {
+        print("Sending registration");
+        handler!.register(value);
       });
     });
   }

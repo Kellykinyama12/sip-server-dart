@@ -72,6 +72,6 @@ String digest(
   }
   //return the final MD5 hash
   //return str((hashlib.md5(responsestr.encode()).hexdigest()));
-  return md5.convert(utf8.encode(responsestr!)).toString();
+  return md5.convert(utf8.encode(responsestr)).toString();
   //return ResponseEncodedString;
 }

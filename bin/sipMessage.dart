@@ -2,6 +2,36 @@ import 'addrPort.dart';
 import 'sipMessageHeaders.dart';
 import 'SipMessageTypes.dart';
 
+class Uri {
+  String? scheme;
+  String? username;
+  String? host;
+  String? port;
+}
+
+class From {
+  Uri uri = Uri();
+}
+
+class To {
+  Uri uri = Uri();
+}
+
+class Method {
+  String? version;
+  String? statusCode;
+  String? reason;
+}
+
+class Via {
+  String? scheme;
+  String? username;
+  String? host;
+  String? port;
+  String? branch;
+  String? rport;
+}
+
 class SipMessage {
   SipMessage(String message, sockaddr_in src)
       : _messageStr = message,
@@ -243,11 +273,65 @@ class SipMessage {
         _via = line;
       } else if (line.indexOf(SipMessageHeaders.FROM) != npos) {
         _from = line;
+        if (_from.indexOf("sip:") != npos) {
+          from.uri.scheme = "sip";
+          from.uri.username = _from.substring(_from.indexOf("sip:") + 4);
+          from.uri.username =
+              from.uri.username!.substring(0, from.uri.username!.indexOf("@"));
+          //print(from.uri.username);
+
+          from.uri.host = _from.substring(_from.indexOf("@") + 1);
+          //print(from.uri.host);
+          //  to.uri.port = to.uri.host!.substring(to.uri.host!.indexOf(":") + 1);
+
+          //  to.uri.port = to.uri.port!.substring(0, to.uri.port!.indexOf(";"));
+          from.uri.host =
+              from.uri.host!.substring(0, from.uri.host!.indexOf(":"));
+
+          //print(from.uri.host);
+          //  print(to.uri.port);
+        }
+
         //print(_from);
         _fromNumber = extractNumber(_from);
         //print(_fromNumber);
       } else if (line.indexOf(SipMessageHeaders.TO) != npos) {
         _to = line;
+        //print(_to);
+        if (_to.indexOf("sip:") != npos) {
+          to.uri.scheme = "sip";
+          to.uri.username = _to.substring(_to.indexOf("sip:") + 4);
+          to.uri.username =
+              to.uri.username!.substring(0, to.uri.username!.indexOf("@"));
+          //print(to.uri.username);
+
+          to.uri.host = _to.substring(_to.indexOf("@") + 1);
+          //print(to.uri.host);
+          //  to.uri.port = to.uri.host!.substring(to.uri.host!.indexOf(":") + 1);
+
+          //  to.uri.port = to.uri.port!.substring(0, to.uri.port!.indexOf(";"));
+          to.uri.host = to.uri.host!.substring(0, to.uri.host!.indexOf(":"));
+
+          //print(to.uri.host);
+          //  print(to.uri.port);
+        }
+        if (_to.indexOf("sips:") != npos) {
+          to.uri.scheme = "sips";
+          to.uri.username = _to.substring(_to.indexOf("sips:") + 5);
+          to.uri.username =
+              to.uri.username!.substring(0, to.uri.username!.indexOf("@"));
+          //print(to.uri.username);
+
+          to.uri.host = _to.substring(_to.indexOf("@") + 1);
+          //print(to.uri.host);
+          to.uri.port = to.uri.host!.substring(to.uri.host!.indexOf(":") + 1);
+
+          to.uri.port = to.uri.port!.substring(0, to.uri.port!.indexOf(";"));
+          to.uri.host = to.uri.host!.substring(0, to.uri.host!.indexOf(":"));
+
+          //print(to.uri.host);
+          //print(to.uri.port);
+        }
         _toNumber = extractNumber(_to);
       } else if (line.indexOf(SipMessageHeaders.CALL_ID) != npos) {
         _callID = line;
@@ -271,9 +355,9 @@ class SipMessage {
 
       msg = msg.substring(pos + SipMessageHeaders.HEADERS_DELIMETER.length);
     }
-    print("Tesing validity");
+    //print("Tesing validity");
     if (!isValidMessage()) {
-      print("Invalid message");
+      //print("Invalid message");
       throw "Invalid message";
       //throw std.runtime_error("Invalid message.");
     }
@@ -284,7 +368,7 @@ class SipMessage {
     //   throw "No ${SipMessageHeaders.WWW_Authenticate} header";
     // }
 
-    print("Finished parsing");
+    //print("Finished parsing");
   }
 
   String _type = "";
@@ -302,6 +386,10 @@ class SipMessage {
   String _messageStr = "";
   String _authorization = "";
   String _wwwAuthenticate = "";
+
+  Via via = Via();
+  From from = From();
+  To to = To();
 
   sockaddr_in _src;
 }
