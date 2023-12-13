@@ -1,7 +1,7 @@
 import "dart:core";
 import 'dart:math';
 
-import "SipMessage.dart";
+import "sipMessage.dart";
 import "SipClient.dart";
 import "Session.dart";
 import 'dart:io';
